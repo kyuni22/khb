@@ -1,0 +1,166 @@
+\documentclass{article}
+
+%Package Part
+\usepackage{relsize,setspace}  % used by latex(describe( ))
+\usepackage{url}               % used in bibliography
+\usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
+% Remove nomove if you want superscripts after punctuation in citations
+\usepackage{lscape}            % for landscape mode tables
+\textwidth 6.75in              % set dimensions before fancyhdr 
+\textheight 9.25in
+\topmargin -.875in
+\oddsidemargin -.125in
+\evensidemargin -.125in
+\usepackage{fancyhdr}          % this and next line are for fancy headers/footers
+\pagestyle{fancy}
+\newcommand{\bc}{\begin{center}}  % abbreviate
+\newcommand{\ec}{\end{center}}
+
+\begin{document}
+
+\SweaveOpts{concordance=TRUE}
+\SweaveOpts{prefix.string=graphics/plot, eps = FALSE, pdf = TRUE}
+%\SweaveOpts{width=6, height=4}
+
+
+\title{Performance Analysis}
+\author{}
+\date{}
+
+\setkeys{Gin}{width=1\textwidth}
+\maketitle
+%\tableofcontents
+
+<<echo = false, results = hide>>=
+require('xtable')
+require('PerformanceAnalytics')
+simsum <- read.zoo("./data/simsum.csv", header=TRUE, sep=",", tz="")
+simsum <- as.xts(simsum)
+simsum.month <- read.zoo("./data/simsum.month.csv", header=TRUE, sep=",", tz="")
+simsum.month <- as.xts(simsum.month)
+
+#Test Setting
+test.col <- 1
+peers.col <- 2
+index.col <- 2
+                         
+# Rolling Setting
+simsum.length <- dim(simsum)[1]
+trailing1y.rows <- ((simsum.length - 250):simsum.length)
+trailing3y.rows <- ((simsum.length - 500):simsum.length)
+@
+
+\section{Overview}
+This documents go through performance of Simulation using Blotter package. Simulation period is from \Sexpr{index(simsum)[1]} to \Sexpr{last(index(simsum))}. Usually portfolio would be composed with one security. Data sources are WiseFN and Bloomberg.
+
+\subsection{Tables}
+<<echo = false, results = tex>>=
+print(xtable(t(table.CalendarReturns(simsum.month[,c(test.col,index.col)])), center="centering", caption="Calendar Returns"), caption.placement="top")
+print(xtable(table.AnnualizedReturns(simsum[,c(test.col,index.col)]), center="centering", caption="Annualized Returns"), caption.placement="top")
+print(xtable(table.Stats(simsum[,c(test.col,index.col)]), center="centering", caption="Statistics"), caption.placement="top")
+@
+
+\subsection{Distribution}
+
+<<fig=TRUE,echo=FALSE>>=
+par(mfrow=c(2,2))
+chart.Histogram(simsum[,test.col], main = "Plain", methods = NULL)
+chart.Histogram(simsum[,test.col], main = "Density", breaks=40,methods = c("add.density", "add.normal"))
+chart.Histogram(simsum[,test.col], main = "Skew and Kurt", methods = c("add.centered", "add.rug"))
+chart.Histogram(simsum[,test.col], main = "Risk Measures", methods = c("add.risk"))
+@
+
+\section{All yr Performance}
+\setkeys{Gin}{width=0.5\textwidth}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[,c(test.col,index.col)], main='Cummulative Performance', geometric=TRUE, wealth.index=TRUE, ylog=TRUE, event.labels=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[,c(test.col,index.col)], main='Simple Performance', geometric=FALSE, wealth.index=TRUE, event.labels=TRUE)
+@
+\end{tabular}
+
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[,c(test.col,peers.col)], simsum[,index.col], legend.loc='topleft', ylog=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[,c(test.col)], simsum[,peers.col], legend.loc='topleft', ylog=TRUE)
+@
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.Boxplot(simsum[,c(test.col,peers.col,index.col)])
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RiskReturnScatter(simsum[,c(test.col,peers.col,index.col)])
+@
+\end{tabular}
+\section{3yr Performance}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[trailing3y.rows,c(test.col,index.col)], main='Cummulative Performance', geometric=TRUE, wealth.index=TRUE, ylog=TRUE, event.labels=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[trailing3y.rows,c(test.col,index.col)], main='Simple Performance', geometric=FALSE, wealth.index=TRUE, event.labels=TRUE)
+@
+\end{tabular}
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[trailing3y.rows,c(test.col,peers.col)], simsum[trailing3y.rows,index.col], legend.loc='topleft', ylog=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[trailing3y.rows,c(test.col)], simsum[trailing3y.rows,peers.col], legend.loc='topleft', ylog=TRUE)
+@
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.Boxplot(simsum[trailing3y.rows,c(test.col,peers.col,index.col)])
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RiskReturnScatter(simsum[trailing3y.rows,c(test.col,peers.col,index.col)])
+@
+\end{tabular}
+\section{1yr Performance}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[trailing1y.rows,c(test.col,index.col)], main='Cummulative Performance', geometric=TRUE, wealth.index=TRUE, ylog=TRUE, event.labels=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+charts.PerformanceSummary(simsum[trailing1y.rows,c(test.col,index.col)], main='Simple Performance', geometric=FALSE, wealth.index=TRUE, event.labels=TRUE)
+@
+\end{tabular}
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[trailing1y.rows,c(test.col,peers.col)], simsum[trailing3y.rows,index.col], legend.loc='topleft', ylog=TRUE)
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RelativePerformance(simsum[trailing1y.rows,c(test.col)], simsum[trailing3y.rows,peers.col], legend.loc='topleft', ylog=TRUE)
+@
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+<<fig=TRUE,echo=FALSE>>=
+chart.Boxplot(simsum[trailing1y.rows,c(test.col,peers.col,index.col)])
+@
+<<fig=TRUE,echo=FALSE>>=
+chart.RiskReturnScatter(simsum[trailing1y.rows,c(test.col,peers.col,index.col)])
+@
+\end{tabular}
+
+\end{document}

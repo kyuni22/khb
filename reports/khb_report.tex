@@ -1,0 +1,171 @@
+\documentclass{article}
+
+%Package Part
+\usepackage{relsize,setspace}  % used by latex(describe( ))
+\usepackage{url}               % used in bibliography
+\usepackage[superscript,nomove]{cite} % use if \cite is used and superscripts wanted
+% Remove nomove if you want superscripts after punctuation in citations
+\usepackage{lscape}            % for landscape mode tables
+\textwidth 6.75in              % set dimensions before fancyhdr 
+\textheight 9.25in
+\topmargin -.875in
+\oddsidemargin -.125in
+\evensidemargin -.125in
+\usepackage{fancyhdr}          % this and next line are for fancy headers/footers
+\pagestyle{fancy}
+\newcommand{\bc}{\begin{center}}  % abbreviate
+\newcommand{\ec}{\end{center}}
+
+\usepackage{Sweave}
+\begin{document}
+
+\input{khb_report-concordance}
+
+%\SweaveOpts{width=6, height=4}
+
+
+\title{Performance Analysis}
+\author{}
+\date{}
+
+\setkeys{Gin}{width=1\textwidth}
+\maketitle
+%\tableofcontents
+
+
+\section{Overview}
+This documents go through performance of Simulation using Blotter package. Simulation period is from 2006-01-02 to 2013-01-17 09:00:00. Usually portfolio would be composed with one security. Data sources are WiseFN and Bloomberg.
+
+\subsection{Tables}
+% latex table generated in R 2.15.2 by xtable 1.7-0 package
+% Wed Jan 23 09:26:49 2013
+\begin{table}[ht]
+\begin{center}
+\caption{Calendar Returns}
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ & 2006 & 2007 & 2008 & 2009 & 2010 & 2011 & 2012 & 2013 \\ 
+  \hline
+1 &  & 8.10 & -7.10 & -1.90 & 7.90 & -0.10 & 1.00 & 1.80 \\ 
+  2 &  & 4.90 & 5.10 & 9.80 & 4.50 & -9.90 & -4.00 &  \\ 
+  3 & 0.00 & 3.00 & 13.00 & 9.10 & 1.60 & 17.60 & 2.60 &  \\ 
+  4 & -2.90 & 4.60 & 2.40 & -9.00 & -3.20 & -4.70 & 0.80 &  \\ 
+  5 & 7.80 & -8.80 & 4.50 & -0.40 & 0.50 & 12.40 & -10.00 &  \\ 
+  6 & -1.90 & -2.60 & -9.70 & -1.70 & 10.50 & -3.50 & -3.00 &  \\ 
+  7 & -5.20 & -13.50 & -4.80 & -7.00 & -4.60 & -0.40 & 7.40 &  \\ 
+  8 & -4.20 & 11.50 & -8.10 & -2.10 & -0.50 & 20.60 & 1.20 &  \\ 
+  9 & -1.80 & 6.30 & 2.20 & -8.70 & -3.80 & -6.10 & 11.50 &  \\ 
+  10 & 0.60 & 17.40 & -9.10 & -2.10 & 2.20 & 3.80 & -1.00 &  \\ 
+  11 & -4.60 & -9.10 & -4.00 & 11.10 & -4.50 & -1.80 & 1.90 &  \\ 
+  12 & 1.30 & 2.60 & 7.90 & -0.20 & -12.80 & 10.80 & -4.50 &  \\ 
+  sim & -11.10 & 21.80 & -10.10 & -5.50 & -4.30 & 39.60 & 2.20 & 1.80 \\ 
+  BuyAndHold & -94.20 & -1800.00 & -100.00 & Inf & 173.30 & -85.40 & 483.30 & -71.40 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}% latex table generated in R 2.15.2 by xtable 1.7-0 package
+% Wed Jan 23 09:26:50 2013
+\begin{table}[ht]
+\begin{center}
+\caption{Annualized Returns}
+\begin{tabular}{rrr}
+  \hline
+ & sim & BuyAndHold \\ 
+  \hline
+Annualized Return & -0.01 & 0.03 \\ 
+  Annualized Std Dev & 0.29 & 0.30 \\ 
+  Annualized Sharpe (Rf=0\%) & -0.04 & 0.10 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}% latex table generated in R 2.15.2 by xtable 1.7-0 package
+% Wed Jan 23 09:26:50 2013
+\begin{table}[ht]
+\begin{center}
+\caption{Statistics}
+\begin{tabular}{rrr}
+  \hline
+ & sim & BuyAndHold \\ 
+  \hline
+Observations & 1788.00 & 1693.00 \\ 
+  NAs & 0.00 & 95.00 \\ 
+  Minimum & -0.08 & -0.10 \\ 
+  Quartile 1 & -0.01 & -0.01 \\ 
+  Median & 0.00 & 0.00 \\ 
+  Arithmetic Mean & 0.00 & 0.00 \\ 
+  Geometric Mean & -0.00 & 0.00 \\ 
+  Quartile 3 & 0.01 & 0.01 \\ 
+  Maximum & 0.10 & 0.08 \\ 
+  SE Mean & 0.00 & 0.00 \\ 
+  LCL Mean (0.95) & -0.00 & -0.00 \\ 
+  UCL Mean (0.95) & 0.00 & 0.00 \\ 
+  Variance & 0.00 & 0.00 \\ 
+  Stdev & 0.02 & 0.02 \\ 
+  Skewness & -0.07 & -0.34 \\ 
+  Kurtosis & 2.80 & 2.49 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+\subsection{Distribution}
+
+\includegraphics{graphics/plot-003}
+
+\section{All yr Performance}
+\setkeys{Gin}{width=0.5\textwidth}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-004}
+\includegraphics{graphics/plot-005}
+\end{tabular}
+
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-006}
+\includegraphics{graphics/plot-007}
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-008}
+\includegraphics{graphics/plot-009}
+\end{tabular}
+\section{3yr Performance}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-010}
+\includegraphics{graphics/plot-011}
+\end{tabular}
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-012}
+\includegraphics{graphics/plot-013}
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-014}
+\includegraphics{graphics/plot-015}
+\end{tabular}
+\section{1yr Performance}
+%\begin{landscape}
+\subsection{Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-016}
+\includegraphics{graphics/plot-017}
+\end{tabular}
+%\end{landscape}
+\subsection{Relative Returns}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-018}
+\includegraphics{graphics/plot-019}
+\end{tabular}
+\subsection{Other Charts}
+\begin{tabular}{cc}
+\includegraphics{graphics/plot-020}
+\includegraphics{graphics/plot-021}
+\end{tabular}
+
+\end{document}
