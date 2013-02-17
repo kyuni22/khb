@@ -36,11 +36,13 @@ ux1 <- vixdata[,2]
 for(symbol in symbols) {
   
   # 
-  signal <- SMA(vix, n=15)
-  names(signal) <- "SMA1"
-  signal$SMA2 <- SMA(vix, n=30)
-  signal$sig <- ifelse(signal$SMA1>signal$SMA2,1,0)
-  
+    signal <- vix/ux1
+    names(signal) <- "TS"
+    signal$ShortMA <- SMA(signal$TS, n=15)
+    signal$LongMA <- SMA(signal$TS, n=30)    
+    signal$longPer <- rollapply(signal$TS, 252, function(x) quantile(x, probs=0.8, na.rm=TRUE), align="right") # Use 252 days for 1yr
+    signal <- merge(signal, dates=0)
+    signal <- merge(signal, sig=0)    
 }
 
 # Set up a portfolio object and an account object
@@ -51,7 +53,7 @@ initAcct(name=account,portfolios=portfolio, initDate=initDate, initEq=initEq)
 # Other Properties to Setup
 verbose=TRUE # TRUE if you want to see transaction 
 b_symbol <- "SPVXSP.Index" # Set benchmark symbol
-start_i <- 760
+start_i <- 253 #Set 760 if you want to see after Dec 2008
 
 # Create trades
 for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
@@ -63,6 +65,11 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
     ClosePrice = as.numeric(Cl(x[i,]))
     Posn = getPosQty(Portfolio=portfolio, Symbol=symbol, Date=CurrentDate)
     UnitSize = as.numeric(trunc(initEq/ClosePrice)) # Contracts
+    
+    ### Path dependent signals
+    signal$dates[i-1] <- ifelse(signal$TS[i-1] > signal$longPer[i-1],signal$dates[i-2]+1,0)
+    signal$sig[i-1] <- ifelse( (signal$dates[i-1] > 4) && (signal$ShortMA[i-1] > signal$LongMA[i-1]), 1, 0)
+    ### End of Path dependent signals
     
     # Position Entry (assume fill at close, so account for slippage)
     if( Posn == 0 ) { 
@@ -114,7 +121,7 @@ initPar <- par()
 # Charting individual Position
 if (require(quantmod)) {
   for(symbol in symbols){
-    chart.Posn(Portfolio=portfolio,Symbol=symbol)
+    chart.Posn(Portfolio=portfolio,Symbol=symbol) #chart.Posn(Portfolio=portfolio,Symbol=symbol, Dates="2012::")
   }
 }
 
