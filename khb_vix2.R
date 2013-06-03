@@ -8,7 +8,8 @@ sapply(list.files(pattern="[.]R$", path='functions/', full.names=TRUE), source)
 initDate="2006-08-25" 
 initEq=10^6
 
-vixdata <- as.xts(read.zoo("./data/vixdata2.csv", header=TRUE, sep=",", tz="" ))
+vixdata <- as.xts(read.zoo("./data/vixdata2.csv", header=TRUE, sep=","))
+index(vixdata) <- as.POSIXct(index(vixdata))
 
 # Try to clean up in case the demo was run previously
 try(rm(list=ls(envir=.blotter),envir=.blotter))
@@ -25,6 +26,9 @@ for(symbol in symbols){
 #init envir
 .blotter <- new.env()
 .instrument <- new.env()
+Sys.setenv(environment=".blotter", TZ="UTC")
+Sys.setenv(environment=".instrument", TZ="UTC")
+Sys.setenv(TZ="UTC")
 
 #vix and ux1
 SPVXSP.Index <- vixdata[,1]
@@ -49,7 +53,7 @@ initAcct(name=account,portfolios=portfolio, initDate=initDate, initEq=initEq)
 # Other Properties to Setup
 verbose=TRUE # TRUE if you want to see transaction 
 b_symbol <- "SPVXSP.Index" # Set benchmark symbol
-start_i <- 10 #Set 760 if you want to see after Dec 2008
+start_i <- 20 #Set 760 if you want to see after Dec 2008
 
 # Create trades
 for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
@@ -66,7 +70,7 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
 #    signal$dates[i-1] <- ifelse(signal$TS[i-1] > signal$longPer[i-1],signal$dates[i-2]+1,0)
 #    signal$sig[i-1] <- ifelse( (signal$dates[i-1] > 4) && (signal$ShortMA[i-1] > signal$LongMA[i-1]), 1, 0)
     ### End of Path dependent signals
-    signal <- ifelse((vix_ts[i] < 0) && (vix_sma[i] < vix_ema[i]), -1, ifelse((vix_ts[i] > 0) && (vix_sma[i] > vix_ema[i]), 1, 0))
+    signal <- ifelse((vix_ts[i-1] < 0) && (vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix_ts[i-1] > 0) && (vix_sma[i-1] > vix_ema[i-1]), 1, 0))
     
     # Position Entry (assume fill at close, so account for slippage)
     if( Posn == 0 ) { 
@@ -127,8 +131,13 @@ if (require(quantmod)) {
 BM_return <- ROC(vix)#ROC(Cl(SPVXSP.Index))
 BM_return[1] <- 0
 
+## Write and read
+write.zoo(PortfReturns(account),"./data/pf_return.csv",sep=",")
+pf_return <-  as.xts(read.zoo("./data/pf_return.csv", header=TRUE, sep=",", tz="" ))
+
 # Simulation Return
-returns <- cbind(PortfReturns(account),BM_return)
+returns <- cbind(pf_return,BM_return)
+
 names(returns) <- c("sim","BuyAndHold")
 #####!!!! Need to be revised
 returns.month <- cbind(ROC(Cl(to.monthly(Sim_return, indexAt='lastof')), type="discrete"),ROC(Cl(to.monthly(BM_return, indexAt='lastof')), type="discrete"))
