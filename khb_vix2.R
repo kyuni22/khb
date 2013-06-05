@@ -40,6 +40,10 @@ ux2 <- vixdata[,3]
 #### Signal Generating
 for(symbol in symbols) {
   #
+  vix_sma1 <- SMA(vix, n=5)
+  vix_sma2 <- SMA(vix, n=30)
+  vix_sma3 <- SMA(vix, n=60) 
+  
   vix_sma <- SMA(vix, n=10)
   vix_ema <- EMA(vix, n=10)
   vix_ts <- ux1-ux2
@@ -70,7 +74,11 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
 #    signal$dates[i-1] <- ifelse(signal$TS[i-1] > signal$longPer[i-1],signal$dates[i-2]+1,0)
 #    signal$sig[i-1] <- ifelse( (signal$dates[i-1] > 4) && (signal$ShortMA[i-1] > signal$LongMA[i-1]), 1, 0)
     ### End of Path dependent signals
-    signal <- ifelse((vix_ts[i-1] < 0) && (vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix_ts[i-1] > 0) && (vix_sma[i-1] > vix_ema[i-1]), 1, 0))
+#    signal <- ifelse((vix_ts[i-1] < 0) && (vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix_ts[i-1] > 0) && (vix_sma[i-1] > vix_ema[i-1]), 1, 0))
+#    signal <- ifelse((vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix_sma[i-1] > vix_ema[i-1]), 1, 0))    
+#    signal <- ifelse((vix[i-1] < ux1[i-1]) && (ux1[i-1] < ux2[i-1]), -1, ifelse((vix[i-1] > ux1[i-1]) && (ux1[i-1] > ux2[i-1]), 1, 0))    
+#    signal <- ifelse((vix_sma3[i-1] > max(vix_sma1[i-1],vix_sma2[i-1])), -1, ifelse((vix_sma1[i-1] > vix_sma2[i-1]) && (vix_sma2[i-1] > vix_sma3[i-1]), 1, 0))    
+    signal <- ifelse((vix[i-1] < ux1[i-1]) && (ux1[i-1] < ux2[i-1]) && (vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix[i-1] > ux1[i-1]) && (ux1[i-1] > ux2[i-1]) && (vix_sma[i-1] > vix_ema[i-1]), 1, 0))    
     
     # Position Entry (assume fill at close, so account for slippage)
     if( Posn == 0 ) { 
@@ -125,6 +133,7 @@ if (require(quantmod)) {
     chart.Posn(Portfolio=portfolio,Symbol=symbol) #chart.Posn(Portfolio=portfolio,Symbol=symbol, Dates="2012::")
   }
 }
+chart.Posn(Portfolio=portfolio,Symbol=symbol, Dates="2013::")
 
 # Bench Mark Return - Buy and Hold with Same initEq
 ## Lets change this latter
@@ -137,8 +146,8 @@ pf_return <-  as.xts(read.zoo("./data/pf_return.csv", header=TRUE, sep=",", tz="
 
 # Simulation Return
 returns <- cbind(pf_return,BM_return)
-
 names(returns) <- c("sim","BuyAndHold")
+
 #####!!!! Need to be revised
 returns.month <- cbind(ROC(Cl(to.monthly(Sim_return, indexAt='lastof')), type="discrete"),ROC(Cl(to.monthly(BM_return, indexAt='lastof')), type="discrete"))
 names(returns.month) <- c("sim","BuyAndHold")
@@ -158,3 +167,7 @@ write.zoo(cbind(.blotter$portfolio.Fut$symbols$KSFA020$posPL, signal[start_i:NRO
 
 # Get End Value 
 getEndEq(account,Sys.time())
+
+write.table(perTradeStats(Portfolio=portfolio, Symbol=symbol), file="./data/perTradeStats.csv",sep=",", row.name=F)
+chart.ME(Portfolio=portfolio, Symbol=symbol, scale=c("percent"))
+write.table(t(tradeStats(Portfolios=portfolio, Symbols=symbol, use="trades")), file="./data/tradeStats.csv", sep=",")

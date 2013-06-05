@@ -82,8 +82,10 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
     signal$dates[i-1] <- ifelse(signal$TS[i-1] > signal$longPer[i-1],signal$dates[i-2]+1,0)
     signal$sig3[i-1] <- ifelse( (signal$dates[i-1] > 4) && (signal$ShortMA[i-1] > signal$LongMA[i-1]), 1, 0)
     tmp_sig <- signal$sig1[i-1] + signal$sig2[i-1] + signal$sig3[i-1]
-    signal$sig[i-1] <- ifelse(tmp_sig == 3, 3, ifelse(tmp_sig == 2, 1, 0))
+    signal$sig[i-1] <- ifelse( tmp_sig == 3, 3, ifelse(tmp_sig == 2, 1, 0))
     ### End of Path dependent signals
+    
+    UnitSize = as.numeric(trunc(initEq/ClosePrice)) # Contracts    
     
     x = get(symbol)
     ClosePrice = as.numeric(Cl(x[i,]))
@@ -96,19 +98,17 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
         UnitSize = as.numeric(trunc(initEq/ClosePrice*tmp_sig/10)) # Contracts
         # Store trade with blotter
         addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
-#        print(paste("Inital Long",signal$sig[i-1][1],UnitSize))
+        print(paste("Inital Long",signal$sig[i-1][1],UnitSize))
       } 
-#      else if ( signal$sig[i-1] < 0 ) { 
-#        # Store trade with blotter
-#        addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
+      else if ( signal$sig[i-1] < 0 ) { 
+        # Store trade with blotter
+        addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
 #        print(paste("Inital Short",signal$sig[i-1][1],-UnitSize))       
-#      }
+      }
     } else {   
       # Have position check exit
-      if( (Posn > 0) && signal$sig[i-1] == 0 ) {
-        UnitSize = as.numeric(trunc(initEq/ClosePrice)) # Contracts
-        txnQty <- -Posn - UnitSize        
-        addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = txnQty , TxnFees=0, verbose=verbose)
+      if( signal$sig[i-1] == 0 ) {
+        addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
       }
       else if( (Posn > 0) && ( signal$sig[i-1] < 0 ) ) {
         # Store trade with blotter
@@ -117,9 +117,8 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
 #        print(paste("short",signal$sig[i-1][1],txnQty))
       } 
       else if( (Posn < 0) && ( signal$sig[i-1] > 0 ) ) {
-        # Store trade with blotter
-        UnitSize = as.numeric(trunc(initEq/ClosePrice*tmp_sig/10)) # Contracts        
-        txnQty <- -Posn + UnitSize
+        # Store trade with blotter        
+        txnQty <- -Posn
         addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = txnQty , TxnFees=0, verbose=verbose)
 #        print(paste("long",signal$sig[i-1][1],txnQty))        
       }
@@ -128,9 +127,7 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
         UnitSize = as.numeric(trunc(initEq/ClosePrice*tmp_sig/10)) # Contracts        
         txnQty = Posn + as.numeric(trunc(initEq/ClosePrice*tmp_sig/10))
         txnQty = ifelse(as.numeric(trunc(initEq/ClosePrice)) > txnQty, UnitSize, 0 )
-        if (txnQty != 0) {
-          addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = txnQty , TxnFees=0, verbose=verbose)
-        }
+        addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = txnQty , TxnFees=0, verbose=verbose)
         #        print(paste("long",signal$sig[i-1][1],txnQty))
       }
       
