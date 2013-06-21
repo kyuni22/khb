@@ -46,7 +46,8 @@ for(symbol in symbols) {
   
   vix_sma <- SMA(vix, n=10)
   vix_ema <- EMA(vix, n=10)
-  vix_ts <- ux1-ux2
+  vix_ts <- ux2 - ux1
+
 }
 
 # Set up a portfolio object and an account object
@@ -68,7 +69,7 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
     x = get(symbol)
     ClosePrice = as.numeric(Cl(x[i,]))
     Posn = getPosQty(Portfolio=portfolio, Symbol=symbol, Date=CurrentDate)
-    UnitSize = as.numeric(trunc(initEq/ClosePrice)) # Contracts
+    UnitSize = as.numeric(trunc(equity/ClosePrice)) # Contracts
     
     ### Path dependent signals
 #    signal$dates[i-1] <- ifelse(signal$TS[i-1] > signal$longPer[i-1],signal$dates[i-2]+1,0)
@@ -78,7 +79,8 @@ for( i in start_i:NROW(get(b_symbol)) ) { # Assumes all dates are the same
 #    signal <- ifelse((vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix_sma[i-1] > vix_ema[i-1]), 1, 0))    
 #    signal <- ifelse((vix[i-1] < ux1[i-1]) && (ux1[i-1] < ux2[i-1]), -1, ifelse((vix[i-1] > ux1[i-1]) && (ux1[i-1] > ux2[i-1]), 1, 0))    
 #    signal <- ifelse((vix_sma3[i-1] > max(vix_sma1[i-1],vix_sma2[i-1])), -1, ifelse((vix_sma1[i-1] > vix_sma2[i-1]) && (vix_sma2[i-1] > vix_sma3[i-1]), 1, 0))    
-    signal <- ifelse((vix[i-1] < ux1[i-1]) && (ux1[i-1] < ux2[i-1]) && (vix_sma[i-1] < vix_ema[i-1]), -1, ifelse((vix[i-1] > ux1[i-1]) && (ux1[i-1] > ux2[i-1]) && (vix_sma[i-1] > vix_ema[i-1]), 1, 0))    
+#  && (vix_ts[i-1] < -1)     && (vix_ts[i-1] > 1)
+    signal <- ifelse((vix[i-1] < ux1[i-1]) && (vix_ts[i-1] > 1), -1, ifelse((vix[i-1] > ux1[i-1]) && (vix_ts[i-1] < -1), 1, 0))
     
     # Position Entry (assume fill at close, so account for slippage)
     if( Posn == 0 ) { 
@@ -168,6 +170,6 @@ write.zoo(cbind(.blotter$portfolio.Fut$symbols$KSFA020$posPL, signal[start_i:NRO
 # Get End Value 
 getEndEq(account,Sys.time())
 
-write.table(perTradeStats(Portfolio=portfolio, Symbol=symbol), file="./data/perTradeStats.csv",sep=",", row.name=F)
-chart.ME(Portfolio=portfolio, Symbol=symbol, scale=c("percent"))
+write.table(perTradeStats(Portfolio=portfolio, Symbol=symbol, includeOpenTrade=FALSE), file="./data/perTradeStats.csv",sep=",", row.name=F)
+chart.ME(Portfolio=portfolio, Symbol=symbol, scale=c("percent"), includeOpenTrade=FALSE)
 write.table(t(tradeStats(Portfolios=portfolio, Symbols=symbol, use="trades")), file="./data/tradeStats.csv", sep=",")
